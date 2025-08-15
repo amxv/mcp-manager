@@ -4,6 +4,8 @@
 
 ![MCP Manager for Claude Desktop](https://assets.zue.ai/mcp-manager-hero.png)
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/zueai/mcp-manager)](https://archestra.ai/mcp-catalog/zueai__mcp-manager)
+
 ## What is MCP?
 
 The Model Context Protocol (MCP) enables Claude to access private data, APIs, and other services to answer questions and perform actions on your behalf. Learn more about MCP at:
