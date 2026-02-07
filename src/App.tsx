@@ -159,44 +159,8 @@ function App() {
 							</div>
 						)}
 				</div>
-				<div className="flex flex-col items-center mt-16 mb-8">
-					<a href="https://zue.ai" target="_blank" rel="noreferrer">
-						<div className="flex items-center justify-center rounded-2xl p-10 h-16 border-2 border-black/10 hover:bg-primary/20 transition-all ease-in-out duration-300 shadow-md hover:shadow-lg">
-							<img
-								src="/logo_zue.svg"
-								alt="zue.ai"
-								className="h-8"
-							/>
-						</div>
-					</a>
-				</div>
-				<div className="flex justify-center my-8 flex-col">
-					<span className="text-md text-center">
-						Made with ❤️ by zue. You can view the{" "}
-						<a
-							href="https://github.com/zueai/mcp-manager"
-							className="link"
-							target="_blank"
-							rel="noreferrer"
-						>
-							source code on GitHub
-						</a>
-						.
-						<br />
-						<a
-							href="https://zue.ai/talk-to-us"
-							className="link"
-							target="_blank"
-							rel="noreferrer"
-						>
-							Contact us
-						</a>{" "}
-						for custom AI automation solutions and product
-						development.
-					</span>
-					<span className="text-sm text-center">
-						<br />
-						<br />
+				<div className="flex justify-center my-16">
+					<span className="text-sm text-center text-black/50">
 						This project is not affiliated with Anthropic. All logos
 						are trademarks of their respective owners.
 					</span>
