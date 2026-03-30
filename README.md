@@ -11,6 +11,10 @@ The Model Context Protocol (MCP) enables Claude to access private data, APIs, an
 - [modelcontextprotocol.io](https://modelcontextprotocol.io)
 - [Anthropic's MCP Announcement](https://www.anthropic.com/news/model-context-protocol)
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/zueai-mcp-manager).
+
 ## Features
 
 - 🚀 Easy-to-use interface for managing MCP servers
