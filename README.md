@@ -96,7 +96,7 @@ This project is not affiliated with Anthropic. All logos are trademarks of their
 
 ## License
 
-MIT
+Apache 2.0
 
 ---
 <br/>
