@@ -22,6 +22,18 @@ function App() {
 	const handleJsonInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		try {
 			const content = JSON.parse(e.target.value)
+			if (
+				content === null ||
+				typeof content !== "object" ||
+				Array.isArray(content) ||
+				content.mcpServers === null ||
+				typeof content.mcpServers !== "object" ||
+				Array.isArray(content.mcpServers)
+			) {
+				throw new Error(
+					"Configuration must contain an mcpServers object"
+				)
+			}
 			setJsonContent(content)
 			setUploadStatus("success")
 			setIsInstructionsOpen(false) // Close accordion on successful upload
