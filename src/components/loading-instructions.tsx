@@ -7,13 +7,15 @@ interface LoadingInstructionsProps {
 	onOpenChange: (isOpen: boolean) => void
 	onJsonInput: (e: ChangeEvent<HTMLTextAreaElement>) => void
 	uploadStatus: "idle" | "success" | "error"
+	uploadError: string | null
 }
 
 export function LoadingInstructions({
 	isOpen,
 	onOpenChange,
 	onJsonInput,
-	uploadStatus
+	uploadStatus,
+	uploadError
 }: LoadingInstructionsProps) {
 	const command =
 		"test -f ~/Library/Application\\ Support/Claude/claude_desktop_config.json && pbcopy < ~/Library/Application\\ Support/Claude/claude_desktop_config.json || (echo '{\\n  \"mcpServers\": {}\\n}' | tee ~/Library/Application\\ Support/Claude/claude_desktop_config.json | pbcopy)"
@@ -69,11 +71,15 @@ export function LoadingInstructions({
 										</div>
 									)}
 									{uploadStatus === "error" && (
-										<div className="mt-2 flex items-center text-error">
+										<div
+											role="alert"
+											className="mt-2 flex items-center text-error"
+										>
 											<XCircle className="w-5 h-5" />
 											<span className="ml-2">
-												Error: Please ensure the content
-												is valid JSON.
+												Error:{" "}
+												{uploadError ??
+													"Invalid configuration"}
 											</span>
 										</div>
 									)}

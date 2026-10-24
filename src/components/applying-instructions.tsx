@@ -1,18 +1,9 @@
 import { TerminalCommand } from "@/components/terminal-command"
+import { type MCPConfig, buildSaveCommand } from "@/mcp-config"
 import { SERVER_CONFIGS } from "@/server-configs"
-import type { ServerConfig } from "@/server-configs"
-
-type RuntimeServerConfig = {
-	command: string
-	args: string[]
-	env?: Record<string, string>
-}
 
 type ApplyingInstructionsProps = {
-	jsonContent: {
-		mcpServers: Record<string, RuntimeServerConfig>
-		cloudflare?: unknown
-	}
+	jsonContent: MCPConfig
 }
 
 export function ApplyingInstructions({
@@ -23,36 +14,6 @@ export function ApplyingInstructions({
 			SERVER_CONFIGS[serverType as keyof typeof SERVER_CONFIGS]
 				?.setupCommands
 	)
-
-	// Helper function to modify the JSON content with absolute paths
-	const getJsonWithAbsolutePaths = () => {
-		const { cloudflare: _, ...modifiedContent } = jsonContent
-
-		for (const [serverType, config] of Object.entries(
-			modifiedContent.mcpServers
-		)) {
-			const serverConfig =
-				SERVER_CONFIGS[serverType as keyof typeof SERVER_CONFIGS]
-			if (serverConfig?.setupCommands) {
-				// Update the args to use the shell variable expansion syntax
-				config.args = config.args?.map((arg) => {
-					if (arg.includes("index.js")) {
-						switch (serverType) {
-							case "exa":
-								return "$HOME_DIR/mcp-servers/exa-mcp-server-main/build/index.js"
-							case "browserbase":
-								return "$HOME_DIR/mcp-servers/mcp-server-browserbase-main/browserbase/dist/index.js"
-							default:
-								return arg
-						}
-					}
-					return arg
-				})
-			}
-		}
-
-		return modifiedContent
-	}
 
 	return (
 		<div className="join join-vertical w-full">
@@ -99,14 +60,7 @@ export function ApplyingInstructions({
 									running:
 								</h3>
 								<TerminalCommand
-									command={`HOME_DIR=$(echo $HOME) && echo '${JSON.stringify(
-										getJsonWithAbsolutePaths(),
-										null,
-										2
-									).replace(
-										/\$HOME_DIR/g,
-										"'\"$HOME_DIR\"'"
-									)}' > "$HOME_DIR/Library/Application Support/Claude/claude_desktop_config.json"`}
+									command={buildSaveCommand(jsonContent)}
 								/>
 							</div>
 						</div>

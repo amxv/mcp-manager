@@ -5,14 +5,9 @@ import { PostgresConfig } from "@/components/server-configs/postgres-config"
 import { SentryConfig } from "@/components/server-configs/sentry-config"
 import { SQLiteConfig } from "@/components/server-configs/sqlite-config"
 import { TerminalCommand } from "@/components/terminal-command"
+import type { MCPServerConfig } from "@/mcp-config"
 import { SERVER_CONFIGS } from "@/server-configs"
 import { ArrowUpRight, Trash2 } from "lucide-react"
-
-type MCPServerConfig = {
-	command: string
-	args: string[]
-	env?: Record<string, string>
-}
 
 type MCPServerCardProps = {
 	serverName: string
@@ -29,10 +24,11 @@ export function MCPServerCard({
 	onUpdate,
 	onDelete
 }: MCPServerCardProps) {
+	const args = config.args ?? []
 	const handleFilesystemUpdate = (paths: string[]) => {
 		const newConfig = {
 			...config,
-			args: [...config.args.slice(0, 2), ...paths]
+			args: [...args.slice(0, 2), ...paths]
 		}
 		onUpdate(serverName, newConfig)
 	}
@@ -40,7 +36,7 @@ export function MCPServerCard({
 	const handlePostgresUpdate = (url: string) => {
 		const newConfig = {
 			...config,
-			args: [...config.args.slice(0, 2), url]
+			args: [...args.slice(0, 2), url]
 		}
 		onUpdate(serverName, newConfig)
 	}
@@ -74,7 +70,7 @@ export function MCPServerCard({
 	const handleObsidianUpdate = (path: string) => {
 		const newConfig = {
 			...config,
-			args: [...config.args.slice(0, 2), path]
+			args: [...args.slice(0, 2), path]
 		}
 		onUpdate(serverName, newConfig)
 	}
@@ -82,7 +78,7 @@ export function MCPServerCard({
 	const handleSentryUpdate = (token: string) => {
 		const newConfig = {
 			...config,
-			args: [...config.args.slice(0, 2), token]
+			args: [...args.slice(0, 2), token]
 		}
 		onUpdate(serverName, newConfig)
 	}
@@ -94,11 +90,14 @@ export function MCPServerCard({
 
 	const serverConfig =
 		SERVER_CONFIGS[serverName as keyof typeof SERVER_CONFIGS]
-	const isFilesystemServer = serverName === "filesystem"
-	const isPostgresServer = serverName === "postgres"
-	const isSqliteServer = serverName === "sqlite"
-	const isObsidianServer = serverName === "obsidian"
-	const isSentryServer = serverName === "sentry"
+	// Transport-by-URL and command-only entries are valid, but do not have the
+	// positional arguments required by these built-in server editors.
+	const hasEditableArgs = Boolean(config.command) && args.length >= 2
+	const isFilesystemServer = hasEditableArgs && serverName === "filesystem"
+	const isPostgresServer = hasEditableArgs && serverName === "postgres"
+	const isSqliteServer = hasEditableArgs && serverName === "sqlite"
+	const isObsidianServer = hasEditableArgs && serverName === "obsidian"
+	const isSentryServer = hasEditableArgs && serverName === "sentry"
 	const iconUrl = icon || serverConfig?.icon
 
 	return (
@@ -125,27 +124,29 @@ export function MCPServerCard({
 				<div className="collapse-content">
 					{isFilesystemServer ? (
 						<FilesystemConfig
-							initialPaths={[config.args[2] || "/Users/"]}
+							initialPaths={
+								args.length > 2 ? args.slice(2) : ["/Users/"]
+							}
 							onUpdate={handleFilesystemUpdate}
 						/>
 					) : isPostgresServer ? (
 						<PostgresConfig
-							initialUrl={config.args[2]}
+							initialUrl={args[2]}
 							onUpdate={handlePostgresUpdate}
 						/>
 					) : isSqliteServer ? (
 						<SQLiteConfig
-							initialPath={config.args[5]}
+							initialPath={args[5]}
 							onUpdate={handleSqliteUpdate}
 						/>
 					) : isObsidianServer ? (
 						<ObsidianConfig
-							initialPath={config.args[2]}
+							initialPath={args[2]}
 							onUpdate={handleObsidianUpdate}
 						/>
 					) : isSentryServer ? (
 						<SentryConfig
-							initialToken={config.args[2]}
+							initialToken={args[2]}
 							onUpdate={handleSentryUpdate}
 						/>
 					) : serverConfig?.env &&
@@ -174,18 +175,20 @@ export function MCPServerCard({
 					)}
 				</div>
 				<div className="flex justify-end">
-					<div className="flex gap-2 mb-4 mr-2">
-						<button
-							type="button"
-							onClick={() =>
-								window.open(serverConfig?.docsUrl, "_blank")
-							}
-							className="btn btn-sm btn-secondary"
-						>
-							<ArrowUpRight className="w-4 h-4" />
-							<span>Docs</span>
-						</button>
-					</div>
+					{serverConfig?.docsUrl && (
+						<div className="flex gap-2 mb-4 mr-2">
+							<button
+								type="button"
+								onClick={() =>
+									window.open(serverConfig.docsUrl, "_blank")
+								}
+								className="btn btn-sm btn-secondary"
+							>
+								<ArrowUpRight className="w-4 h-4" />
+								<span>Docs</span>
+							</button>
+						</div>
+					)}
 					<div className="flex gap-2 mb-4 mr-4 justify-end">
 						<button
 							type="button"

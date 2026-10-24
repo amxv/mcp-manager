@@ -4,11 +4,12 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
+		"test": "bun test",
 		"dev": "bun check && vite --port 7777",
 		"build": "bun check && vite build",
 		"lint": "eslint .",
 		"preview": "vite preview",
-		"check": "tsc --noEmit && biome check --write ."
+		"check": "tsc -b && biome check ."
 	},
 	"dependencies": {
 		"lucide-react": "^0.468.0",
