@@ -1,24 +1,13 @@
 import { MCPServerCard } from "@/components/mcp-server-card"
+import type { MCPConfig, MCPServerConfig } from "@/mcp-config"
 import { SERVER_CONFIGS } from "@/server-configs"
 import { capitalizeFirstLetter } from "@/utils"
 import { Plus, Save, X } from "lucide-react"
-
-type MCPServer = {
-	command: string
-	args: string[]
-}
-
-type MCPServers = {
-	[key: string]: MCPServer
-}
-
-type MCPConfig = {
-	mcpServers: MCPServers
-}
+import type { Dispatch, SetStateAction } from "react"
 
 type MCPServersProps = {
 	jsonContent: MCPConfig
-	onUpdate: (newContent: MCPConfig) => void
+	onUpdate: Dispatch<SetStateAction<MCPConfig>>
 	onServerAdd: (serverType: keyof typeof SERVER_CONFIGS) => void
 	onServerRemove: (serverType: string) => void
 }
@@ -29,15 +18,14 @@ export function MCPServers({
 	onServerAdd,
 	onServerRemove
 }: MCPServersProps) {
-	const handleServerUpdate = (name: string, newConfig: MCPServer) => {
-		const updatedContent = {
-			...jsonContent,
+	const handleServerUpdate = (name: string, newConfig: MCPServerConfig) => {
+		onUpdate((previous) => ({
+			...previous,
 			mcpServers: {
-				...jsonContent.mcpServers,
+				...previous.mcpServers,
 				[name]: newConfig
 			}
-		}
-		onUpdate(updatedContent)
+		}))
 	}
 
 	const handleServerDelete = (name: string) => {

@@ -1,19 +1,18 @@
 import { ApplyingInstructions } from "@/components/applying-instructions"
 import { LoadingInstructions } from "@/components/loading-instructions"
 import { MCPServers } from "@/components/mcp-servers"
+import { type MCPConfig, validateMcpConfig } from "@/mcp-config"
 import { SERVER_CONFIGS } from "@/server-configs"
 import type React from "react"
 import { useState } from "react"
 
 function App() {
-	const [jsonContent, setJsonContent] = useState<{
-		mcpServers: Record<
-			string,
-			{ command: string; args: string[]; env?: Record<string, string> }
-		>
-	}>({
+	const [jsonContent, setJsonContent] = useState<MCPConfig>({
 		mcpServers: {}
 	})
+	const [hasLoadedConfig, setHasLoadedConfig] = useState(false)
+	const [configRevision, setConfigRevision] = useState(0)
+	const [uploadError, setUploadError] = useState<string | null>(null)
 	const [uploadStatus, setUploadStatus] = useState<
 		"idle" | "success" | "error"
 	>("idle")
@@ -21,24 +20,17 @@ function App() {
 
 	const handleJsonInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		try {
-			const content = JSON.parse(e.target.value)
-			if (
-				content === null ||
-				typeof content !== "object" ||
-				Array.isArray(content) ||
-				content.mcpServers === null ||
-				typeof content.mcpServers !== "object" ||
-				Array.isArray(content.mcpServers)
-			) {
-				throw new Error(
-					"Configuration must contain an mcpServers object"
-				)
-			}
+			const content = validateMcpConfig(JSON.parse(e.target.value))
 			setJsonContent(content)
+			setHasLoadedConfig(true)
+			setConfigRevision((revision) => revision + 1)
 			setUploadStatus("success")
+			setUploadError(null)
 			setIsInstructionsOpen(false) // Close accordion on successful upload
 		} catch (error) {
-			console.error("Error parsing JSON:", error)
+			setUploadError(
+				error instanceof Error ? error.message : "Invalid configuration"
+			)
 			setUploadStatus("error")
 		}
 	}
@@ -53,24 +45,32 @@ function App() {
 			...(serverConfig.env && { env: serverConfig.env })
 		}
 
-		setJsonContent({
-			...jsonContent,
+		setJsonContent((previous) => ({
+			...previous,
 			mcpServers: {
-				...jsonContent.mcpServers,
+				...previous.mcpServers,
 				[serverType]: newServer
 			}
-		})
+		}))
 	}
 
 	const handleServerRemove = (serverType: string) => {
 		// Remove from mcpServers if present
-		if (jsonContent.mcpServers[serverType]) {
-			const { [serverType]: _, ...rest } = jsonContent.mcpServers
-			setJsonContent({
-				...jsonContent,
+		setJsonContent((previous) => {
+			if (
+				!Object.prototype.hasOwnProperty.call(
+					previous.mcpServers,
+					serverType
+				)
+			) {
+				return previous
+			}
+			const { [serverType]: _, ...rest } = previous.mcpServers
+			return {
+				...previous,
 				mcpServers: rest
-			})
-		}
+			}
+		})
 	}
 
 	return (
@@ -140,36 +140,26 @@ function App() {
 						onOpenChange={setIsInstructionsOpen}
 						onJsonInput={handleJsonInput}
 						uploadStatus={uploadStatus}
+						uploadError={uploadError}
 					/>
 
-					{Object.keys(jsonContent).length > 0 &&
-						uploadStatus === "success" && (
-							<div className="space-y-6">
-								<MCPServers
-									jsonContent={{
-										mcpServers:
-											jsonContent.mcpServers as Record<
-												string,
-												{
-													command: string
-													args: string[]
-													env?: Record<string, string>
-												}
-											>
-									}}
-									onUpdate={setJsonContent}
-									onServerAdd={handleServerAdd}
-									onServerRemove={handleServerRemove}
-								/>
+					{hasLoadedConfig && (
+						<div className="space-y-6">
+							<MCPServers
+								key={configRevision}
+								jsonContent={jsonContent}
+								onUpdate={setJsonContent}
+								onServerAdd={handleServerAdd}
+								onServerRemove={handleServerRemove}
+							/>
 
-								{Object.keys(jsonContent.mcpServers).length >
-									0 && (
-									<ApplyingInstructions
-										jsonContent={jsonContent}
-									/>
-								)}
-							</div>
-						)}
+							{Object.keys(jsonContent.mcpServers).length > 0 && (
+								<ApplyingInstructions
+									jsonContent={jsonContent}
+								/>
+							)}
+						</div>
+					)}
 				</div>
 				<div className="flex justify-center my-16">
 					<span className="text-sm text-center text-black/50">
